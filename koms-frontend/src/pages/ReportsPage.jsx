@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getTodayReport } from "../api/report.api";
 
-const STATUS_ORDER = ["pending", "confirmed", "preparing", "ready", "served", "paid", "cancelled"];
+const STATUS_ORDER = ["awaiting_confirmation", "pending", "confirmed", "preparing", "ready", "served", "paid", "cancelled"];
 
 function ReportsPage() {
   const [report, setReport] = useState(null);

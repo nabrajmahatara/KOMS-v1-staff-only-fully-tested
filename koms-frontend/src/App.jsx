@@ -12,6 +12,7 @@ import KitchenDisplayPage from "./pages/KitchenDisplayPage";
 import CashierPage from "./pages/CashierPage";
 import ReportsPage from "./pages/ReportsPage";
 import CustomerOrderQueuePage from "./pages/CustomerOrderQueuePage";
+import CustomerOrderPage from "./pages/CustomerOrderPage";
 import "./App.css";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/order/:token" element={<CustomerOrderPage />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Dashboard />} />
