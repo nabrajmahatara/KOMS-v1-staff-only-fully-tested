@@ -14,15 +14,24 @@ export const protect = asyncHandler(async (req, res, next) => {
 
   if (!token) throw new ApiError(401, 'Not authorized, no token provided');
 
+  let decoded;
   try {
-    const decoded = jwt.verify(token, config.jwtSecret);
-    const user = await User.findById(decoded.id).select('-password');
-    if (!user || !user.isActive) {
-      throw new ApiError(401, 'User no longer exists or is inactive');
-    }
-    req.user = user;
-    next();
-  } catch (err) {
+    decoded = jwt.verify(token, config.jwtSecret);
+  } catch {
     throw new ApiError(401, 'Not authorized, token failed');
   }
+
+  const user = await User.findById(decoded.id).select('-password');
+  if (!user || !user.isActive) {
+    throw new ApiError(401, 'User no longer exists or is inactive');
+  }
+  req.user = user;
+  next();
 });
+
+export const authorize = (...roles) => (req, res, next) => {
+  if (!roles.includes(req.user.role)) {
+    return next(new ApiError(403, 'You do not have permission to perform this action'));
+  }
+  next();
+};

@@ -1,21 +1,30 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import {
-  registerUser,
-  loginUser,
-  getCurrentUser,
-} from "../api/auth.api";
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { loginUser, getCurrentUser } from "../api/auth.api";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem("token")));
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setToken(null);
+    setUser(null);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    window.addEventListener("auth:unauthorized", logout);
 
+    return () => window.removeEventListener("auth:unauthorized", logout);
+  }, [logout]);
+
+  useEffect(() => {
     if (!token) {
-      setLoading(false);
       return;
     }
 
@@ -23,47 +32,34 @@ export function AuthProvider({ children }) {
       try {
         const response = await getCurrentUser();
         setUser(response.data);
-      } catch (error) {
-        localStorage.removeItem("token");
-        setUser(null);
+      } catch {
+        logout();
       } finally {
         setLoading(false);
       }
     };
 
     loadUser();
-  }, []);
+  }, [logout, token]);
 
   const login = async (credentials) => {
     const response = await loginUser(credentials);
 
     localStorage.setItem("token", response.data.token);
+    localStorage.setItem("user", JSON.stringify(response.data.user));
+    setToken(response.data.token);
     setUser(response.data.user);
 
     return response;
-  };
-
-  const register = async (userData) => {
-    const response = await registerUser(userData);
-
-    localStorage.setItem("token", response.data.token);
-    setUser(response.data.user);
-
-    return response;
-  };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        token,
         loading,
         login,
-        register,
         logout,
       }}
     >

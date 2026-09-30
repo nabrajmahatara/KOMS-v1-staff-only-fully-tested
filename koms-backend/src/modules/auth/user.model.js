@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
+import { ROLE_VALUES, ROLES } from '../../constants/roles.js';
 
 const userSchema = new mongoose.Schema(
   {
@@ -21,11 +22,10 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'password is required'],
-      trim: true,
       minlength: [8, 'at least 8 characters required'],
       select: false,
     },
-    avatar: { type: String, default: '' },
+    role: { type: String, enum: ROLE_VALUES, default: ROLES.WAITER, required: true },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
@@ -37,6 +37,13 @@ userSchema.pre('save', async function () {
   
   this.password = await bcrypt.hash(this.password, 10);
 });
+
+// MongoDB enforces the bootstrap invariant even when registrations arrive
+// concurrently. The partial filter leaves all non-owner roles unrestricted.
+userSchema.index(
+  { role: 1 },
+  { unique: true, partialFilterExpression: { role: ROLES.OWNER } }
+);
 
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);

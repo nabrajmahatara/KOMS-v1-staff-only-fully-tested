@@ -5,8 +5,7 @@ import ApiResponse from '../../utils/ApiResponse.js';
 
 export const getMyNotifications = asyncHandler(async (req, res) => {
   const notifications = await Notification.find({ recipient: req.user._id })
-    .populate('relatedTask', 'title')
-    .populate('relatedBoard', 'name')
+    .populate('relatedOrder', 'status table totalAmount')
     .sort('-createdAt')
     .limit(100);
 

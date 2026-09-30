@@ -8,7 +8,14 @@ let io;
 export function initSocket(server) {
   io = new Server(server, {
     cors: {
-      origin: config.clientUrl || '*',
+      origin(origin, callback) {
+        if (!origin || config.isAllowedClientOrigin(origin)) {
+          callback(null, true);
+          return;
+        }
+
+        callback(new Error('Origin is not allowed by CORS'));
+      },
       credentials: true,
     },
   });
@@ -22,7 +29,7 @@ export function initSocket(server) {
 
       const decoded = jwt.verify(token, config.jwtSecret);
       const user = await User.findById(decoded.id).select('-password');
-      if (!user) return next(new Error('User not found'));
+      if (!user || !user.isActive) return next(new Error('User not found or inactive'));
 
       socket.user = user;
       next();
@@ -35,9 +42,15 @@ export function initSocket(server) {
     console.log(`🔌 Socket connected: ${socket.user.username} (${socket.id})`);
     socket.join(`user:${socket.user._id}`);
 
-    socket.on('joinBoard', (boardId) => socket.join(`board:${boardId}`));
-    socket.on('leaveBoard', (boardId) => socket.leave(`board:${boardId}`));
-    socket.on('joinWorkspace', (workspaceId) => socket.join(`workspace:${workspaceId}`));
+    if (['kitchen_staff', 'owner'].includes(socket.user.role)) {
+      socket.join('kitchen:orders');
+    }
+    if (socket.user.role === 'cashier') {
+      socket.join('cashier:orders');
+    }
+    if (socket.user.role === 'waiter') {
+      socket.join('waiters:confirmation');
+    }
 
     socket.on('disconnect', () => {
       console.log(`❌ Socket disconnected: ${socket.id}`);

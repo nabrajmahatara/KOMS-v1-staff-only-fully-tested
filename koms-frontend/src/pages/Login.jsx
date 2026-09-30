@@ -33,9 +33,13 @@ function Login() {
       await login(formData);
       navigate("/");
     } catch (error) {
-      setError(
-        error.response?.data?.message || "Login failed. Please try again."
-      );
+      if (!error.response) {
+        setError(
+          "Cannot reach the KOMS API. Restart the Vite server and confirm the backend is running on port 4000."
+        );
+      } else {
+        setError(error.response.data?.message || "Login request failed.");
+      }
     } finally {
       setLoading(false);
     }
@@ -79,12 +83,6 @@ function Login() {
         </button>
       </form>
 
-      <p>
-        Don't have an account?{" "}
-        <button type="button" onClick={() => navigate("/register")}>
-          Register
-        </button>
-      </p>
     </div>
   );
 }

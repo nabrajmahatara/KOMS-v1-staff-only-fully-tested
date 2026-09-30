@@ -1,0 +1,18 @@
+import { Router } from 'express';
+import { authorize, protect } from '../../middlewares/auth.middleware.js';
+import { ROLES } from '../../constants/roles.js';
+import * as menu from './menu.controller.js';
+
+const router = Router();
+const manageMenu = authorize(ROLES.OWNER, ROLES.MANAGER);
+router.use(protect);
+router.get('/categories', menu.getCategories);
+router.post('/categories', manageMenu, menu.createCategory);
+router.patch('/categories/:id', manageMenu, menu.updateCategory);
+router.delete('/categories/:id', manageMenu, menu.deleteCategory);
+router.get('/items', menu.getMenuItems);
+router.post('/items', manageMenu, menu.createMenuItem);
+router.patch('/items/:id', manageMenu, menu.updateMenuItem);
+router.patch('/items/:id/availability', manageMenu, menu.toggleAvailability);
+router.delete('/items/:id', manageMenu, menu.deleteMenuItem);
+export default router;

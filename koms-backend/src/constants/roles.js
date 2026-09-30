@@ -1,8 +1,10 @@
 export const ROLES = {
   OWNER: 'owner',
-  ADMIN: 'admin',
-  MEMBER: 'member'
+  MANAGER: 'manager',
+  WAITER: 'waiter',
+  KITCHEN_STAFF: 'kitchen_staff',
+  CASHIER: 'cashier',
 };
 
 
-export const ROLE_VALUES = Object.values(ROLES); 
+export const ROLE_VALUES = Object.values(ROLES);
