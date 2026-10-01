@@ -2,10 +2,12 @@ import { Router } from 'express';
 import { authorize, protect } from '../../middlewares/auth.middleware.js';
 import { ROLES } from '../../constants/roles.js';
 import * as menu from './menu.controller.js';
+import upload from './menu-upload.middleware.js';
 
 const router = Router();
 const manageMenu = authorize(ROLES.OWNER, ROLES.MANAGER);
 router.use(protect);
+router.post('/uploads/menu-image', manageMenu, upload.single('image'), menu.uploadMenuImage);
 router.get('/categories', menu.getCategories);
 router.post('/categories', manageMenu, menu.createCategory);
 router.patch('/categories/:id', manageMenu, menu.updateCategory);

@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { listNotifications, markNotificationRead } from "../api/notification.api";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
+import { useLocation } from "react-router-dom";
 
 function NotificationBell() {
   const { user } = useAuth();
   const socket = useSocket();
+  const { pathname } = useLocation();
   const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
 
@@ -33,7 +35,7 @@ function NotificationBell() {
     return () => socket.off("notification:new", handleNew);
   }, [socket]);
 
-  if (!user) return null;
+  if (!user || pathname === "/" || pathname === "/order" || pathname.startsWith("/order/")) return null;
   const unread = notifications.filter((notification) => !notification.isRead).length;
   const markRead = async (notification) => {
     if (notification.isRead) return;

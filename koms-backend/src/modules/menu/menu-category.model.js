@@ -4,6 +4,7 @@ const menuCategorySchema = new mongoose.Schema(
   {
     name: { type: String, required: [true, 'category name is required'], trim: true, unique: true },
     displayOrder: { type: Number, default: 0, min: 0 },
+    imageUrl: { type: String, trim: true, default: '' },
   },
   { timestamps: true }
 );

@@ -13,18 +13,19 @@ import CashierPage from "./pages/CashierPage";
 import ReportsPage from "./pages/ReportsPage";
 import CustomerOrderQueuePage from "./pages/CustomerOrderQueuePage";
 import CustomerOrderPage from "./pages/CustomerOrderPage";
-import CustomerLandingPage from "./pages/CustomerLandingPage";
+import Home from "./pages/Home";
 import OccupiedTablePickerPage from "./pages/OccupiedTablePickerPage";
 import CustomerTableOrderPage from "./pages/CustomerTableOrderPage";
-import NotificationBell from "./components/NotificationBell";
+import AppNavigation from "./components/AppNavigation";
 import "./App.css";
+import "./Workspace.css";
 
 function App() {
   return (
     <BrowserRouter>
-      <NotificationBell />
+      <AppNavigation />
       <Routes>
-        <Route path="/" element={<CustomerLandingPage />} />
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/order" element={<OccupiedTablePickerPage />} />
         <Route path="/order/table/:tableId" element={<CustomerTableOrderPage />} />

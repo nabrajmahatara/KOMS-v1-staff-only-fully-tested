@@ -1,0 +1,2 @@
+import { Reveal } from "./Reveal";
+export default function OpeningHours() { return <section className="hours-section" id="hours"><Reveal><p className="section-index">05 Find us</p><h2>WHEN<br />WE’RE ON.</h2><div className="hours-grid"><p>Thursday to Saturday</p><strong>12:00 to 00:00</strong><p>Sunday</p><strong>12:00 to 18:00</strong></div><a href="https://maps.google.com/?q=Maison+KOMS" target="_blank" rel="noreferrer" className="address-link">12 Rue des Amis<br />Kathmandu, Nepal ↗</a></Reveal></section>; }

@@ -1,0 +1,4 @@
+import { useState } from "react";
+import { ArrowUpRight } from "lucide-react";
+import { Reveal } from "./Reveal";
+export default function Contact() { const [sent, setSent] = useState(false); return <section className="contact-section" id="contact"><Reveal><p className="section-index">06 Hello</p><h2>A TABLE?<br />A QUESTION?</h2><p className="contact-lede">Tell us what you have in mind. For same-day tables, please give us a call.</p><form onSubmit={(event) => { event.preventDefault(); setSent(true); }}><label>Full name<input required name="name" /></label><label>Email address<input required type="email" name="email" /></label><label>Subject<input name="subject" /></label><label>Message<textarea required name="message" rows="4" /></label><button type="submit">Send message <ArrowUpRight size={20} /></button>{sent && <p className="form-success">Merci. We’ll be in touch soon.</p>}</form></Reveal></section>; }

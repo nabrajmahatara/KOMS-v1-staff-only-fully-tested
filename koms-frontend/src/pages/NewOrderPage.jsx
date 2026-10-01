@@ -3,10 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { listTables } from "../api/table.api";
 import { listCategories, listMenuItems } from "../api/menu.api";
 import { createOrder } from "../api/order.api";
+import { getMenuImage, handleImageFallback } from "../utils/menuImage";
 
 function NewOrderPage() {
   const navigate = useNavigate();
   const [tables, setTables] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
   const [selectedTableId, setSelectedTableId] = useState("");
@@ -23,7 +25,7 @@ function NewOrderPage() {
         listTables(), listCategories(), listMenuItems(),
       ]);
       setTables(tableResponse.data);
-      setCategories(categoryResponse.data);
+      setCategories([...categoryResponse.data].sort((a, b) => a.displayOrder - b.displayOrder || a.name.localeCompare(b.name)));
       setItems(itemResponse.data.filter((item) => item.isAvailable));
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Unable to load tables and menu.");
@@ -91,9 +93,13 @@ function NewOrderPage() {
           {tables.length === 0 && <p>No tables have been configured.</p>}
 
           <h2>2. Add menu items</h2>
-          {categories.map((category) => {
+          <nav className="category-navigation" aria-label="Menu categories">
+            <button type="button" aria-pressed={selectedCategory === "all"} onClick={() => setSelectedCategory("all")}>All dishes</button>
+            {categories.map(category => <button type="button" key={category._id} aria-pressed={selectedCategory === category._id} onClick={() => setSelectedCategory(category._id)}>{category.name}</button>)}
+          </nav>
+          {categories.filter(category => selectedCategory === "all" || category._id === selectedCategory).map((category) => {
             const categoryItems = items.filter((item) => (typeof item.category === "string" ? item.category : item.category?._id) === category._id);
-            return categoryItems.length > 0 && <section className="menu-picker" key={category._id}><h3>{category.name}</h3><div className="menu-picker-grid">{categoryItems.map((item) => <button type="button" key={item._id} className="menu-choice" onClick={() => addToCart(item)}><strong>{item.name}</strong><span>NPR {Number(item.price).toFixed(2)}</span>{item.description && <small>{item.description}</small>}</button>)}</div></section>;
+            return categoryItems.length > 0 && <section className="menu-picker" key={category._id}><h3>{category.name}</h3><div className="menu-picker-grid">{categoryItems.map((item) => <button type="button" key={item._id} className="menu-choice" onClick={() => addToCart(item)}><img className="menu-choice-image" src={getMenuImage(item, category)} alt="" onError={handleImageFallback} /><strong>{item.name}</strong><span>NPR {Number(item.price).toFixed(2)}</span>{item.description && <small>{item.description}</small>}</button>)}</div></section>;
           })}
           {items.length === 0 && <p>No available menu items right now.</p>}
         </section>

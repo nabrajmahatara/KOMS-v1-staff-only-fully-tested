@@ -1,0 +1,1 @@
+export default function Footer() { return <footer className="restaurant-footer"><strong>MAISON KOMS © 2026</strong><span>All rights reserved</span><a href="#top">Back to top ↑</a><a href="https://instagram.com" target="_blank" rel="noreferrer">Instagram ↗</a></footer>; }

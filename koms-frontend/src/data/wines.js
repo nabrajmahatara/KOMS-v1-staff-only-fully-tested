@@ -1,0 +1,5 @@
+export const wineGroups = [
+  { title: "Red", wines: [{ name: "Night Market", region: "Languedoc · 2024", grapes: "Cinsault, Grenache", description: "JUICY RED BERRIES, DRIED ROSE AND A GENTLE, PEPPERY FINISH.", glassPrice: "7", bottlePrice: "31" }, { name: "Les Pentes", region: "Loire · 2023", grapes: "Cabernet Franc", description: "DARK CHERRY, FRESH HERBS, SILKY TANNINS AND A LIVELY EDGE.", glassPrice: "8", bottlePrice: "36" }] },
+  { title: "White", wines: [{ name: "Les Sables", region: "Provence · 2024", grapes: "Vermentino", description: "LEMON ZEST, SALT AIR AND WHITE FLOWERS. CLEAN AND GENEROUS.", glassPrice: "7", bottlePrice: "30" }, { name: "Petit Soleil", region: "Gascogne · 2024", grapes: "Colombard, Gros Manseng", description: "RIPE PEAR, HERBAL LIFT AND A BRIGHT, CRISP FINISH.", glassPrice: "6", bottlePrice: "27" }] },
+  { title: "Rosé & local", wines: [{ name: "After Hours", region: "Provence · 2024", grapes: "Grenache, Cinsault", description: "WILD STRAWBERRY, PINK PEPPERCORN AND A DRY, SUNNY FINISH.", glassPrice: "6", bottlePrice: "28" }] },
+];

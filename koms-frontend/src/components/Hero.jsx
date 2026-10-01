@@ -1,0 +1,3 @@
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+export default function Hero() { return <section className="restaurant-hero" id="top"><p className="kicker">Kitchen · bar · all day</p><motion.h1 initial={{ opacity: 0, y: 34 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}>LONG LUNCHES,<br />LATE LITTLE<br />NIGHTS.</motion.h1><div className="hero-actions"><p className="hero-note">A room for plates passed around,<br />good bottles and staying longer.</p><Link to="/order" className="hero-order-link">Choose your table →</Link></div></section>; }

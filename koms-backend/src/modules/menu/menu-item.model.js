@@ -6,6 +6,7 @@ const menuItemSchema = new mongoose.Schema(
     price: { type: Number, required: true, min: [0, 'price cannot be negative'] },
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'MenuCategory', required: true },
     description: { type: String, trim: true, default: '' },
+    imageUrl: { type: String, trim: true, default: '' },
     isAvailable: { type: Boolean, default: true },
     prepTimeMinutes: { type: Number, default: 0, min: [0, 'prep time cannot be negative'] },
   },

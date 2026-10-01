@@ -132,12 +132,12 @@ async function claimOrUseQrTable(table) {
 
 export const getPublicMenu = asyncHandler(async (req, res) => {
   const items = await MenuItem.find({ isAvailable: true })
-    .select('name price category description prepTimeMinutes')
+    .select('name price category description imageUrl prepTimeMinutes')
     .sort('name')
     .lean();
   const categoryIds = [...new Set(items.map((item) => item.category.toString()))];
   const categories = await MenuCategory.find({ _id: { $in: categoryIds } })
-    .select('name displayOrder')
+    .select('name displayOrder imageUrl')
     .sort('displayOrder name')
     .lean();
   res.status(200).json(new ApiResponse(200, { categories, items }, 'Public menu fetched'));
