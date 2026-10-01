@@ -1,12 +1,18 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function Dashboard() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const canManageRestaurant = ["owner", "manager"].includes(user?.role);
   const isWaiter = user?.role === "waiter";
   const canViewKitchen = ["kitchen_staff", "owner"].includes(user?.role);
   const canTakePayment = ["cashier", "owner"].includes(user?.role);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <main className="page-shell">
@@ -16,7 +22,7 @@ function Dashboard() {
           <h1>KOMS Dashboard</h1>
           <p>Signed in as {user?.username} ({user?.role}).</p>
         </div>
-        <button type="button" className="button secondary" onClick={logout}>
+        <button type="button" className="button secondary" onClick={handleLogout}>
           Log out
         </button>
       </header>

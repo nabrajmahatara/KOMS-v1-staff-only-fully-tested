@@ -31,7 +31,7 @@ function Login() {
 
     try {
       await login(formData);
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       if (!error.response) {
         setError(
@@ -46,10 +46,12 @@ function Login() {
   };
 
   return (
-    <div>
-      <h1>Login</h1>
+    <main className="login-page">
+      <section className="login-card" aria-labelledby="login-title">
+      <h1 id="login-title">Staff login</h1>
+      <p className="muted">Sign in to access the KOMS staff dashboard.</p>
 
-      <form onSubmit={handleSubmit}>
+      <form className="login-form" onSubmit={handleSubmit}>
         <div>
           <label htmlFor="emailOrUsername">Email or Username</label>
 
@@ -76,14 +78,14 @@ function Login() {
           />
         </div>
 
-        {error && <p>{error}</p>}
+        {error && <p className="error" role="alert">{error}</p>}
 
-        <button type="submit" disabled={loading}>
+        <button type="submit" className="button" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>
-
-    </div>
+      </section>
+    </main>
   );
 }
 

@@ -15,7 +15,7 @@ const ownerPassword = process.env.KOMS_TEST_OWNER_PASSWORD;
 const suffix = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 const sessionId = `customer-session-${suffix}`;
 const unavailableSessionId = `unavailable-session-${suffix}`;
-const created = { tableId: null, categoryId: null, itemId: null };
+const created = { tableIds: [], orderIds: [], menuItemIds: [], categoryIds: [], userIds: [] };
 
 if (!ownerUsername || !ownerPassword) {
   throw new Error('Set KOMS_TEST_OWNER_USERNAME and KOMS_TEST_OWNER_PASSWORD');
@@ -60,26 +60,26 @@ try {
     body: { name: `PUBLIC-RACE-${suffix}`, capacity: 2, status: 'occupied' },
   });
   if (table.status !== 201) throw new Error(`Table creation failed: ${table.status}`);
-  created.tableId = table.payload.data._id;
+  created.tableIds.push(table.payload.data._id);
 
   const category = await request('/menu/categories', {
     method: 'POST', token: ownerToken,
     body: { name: `PUBLIC-RACE-${suffix}`, displayOrder: 999 },
   });
   if (category.status !== 201) throw new Error(`Category creation failed: ${category.status}`);
-  created.categoryId = category.payload.data._id;
+  created.categoryIds.push(category.payload.data._id);
 
   const item = await request('/menu/items', {
     method: 'POST', token: ownerToken,
-    body: { name: `PUBLIC-RACE-ITEM-${suffix}`, price: 17.25, category: created.categoryId },
+    body: { name: `PUBLIC-RACE-ITEM-${suffix}`, price: 17.25, category: created.categoryIds[0] },
   });
   if (item.status !== 201) throw new Error(`Item creation failed: ${item.status}`);
-  created.itemId = item.payload.data._id;
+  created.menuItemIds.push(item.payload.data._id);
 
   const orderPath = `/public/table/${table.payload.data.publicToken}/order`;
   const concurrentBody = {
     customerSessionId: sessionId,
-    items: [{ menuItem: created.itemId, quantity: 1, notes: 'Race test', price: 0 }],
+    items: [{ menuItem: created.menuItemIds[0], quantity: 1, notes: 'Race test', price: 0 }],
   };
   const [first, second] = await Promise.all([
     request(orderPath, { method: 'POST', body: concurrentBody }),
@@ -87,9 +87,13 @@ try {
   ]);
   printRaw('race_response_1', first);
   printRaw('race_response_2', second);
+  for (const response of [first, second]) {
+    const orderId = response.payload?.data?.orderId;
+    if (orderId && !created.orderIds.includes(orderId)) created.orderIds.push(orderId);
+  }
 
   const matchingOrders = await Order.find({
-    table: created.tableId,
+    table: created.tableIds[0],
     customerSessionId: sessionId,
     status: AWAITING_CONFIRMATION,
   }).select('_id status totalAmount items').lean();
@@ -97,7 +101,7 @@ try {
   console.log(`race_database_orders=${JSON.stringify(matchingOrders.map((order) => ({ id: order._id, status: order.status, totalAmount: order.totalAmount, itemCount: order.items.length })))}`);
   if (matchingOrders.length !== 1) throw new Error(`Expected one awaiting ticket, found ${matchingOrders.length}`);
 
-  const unavailableToggle = await request(`/menu/items/${created.itemId}/availability`, {
+  const unavailableToggle = await request(`/menu/items/${created.menuItemIds[0]}/availability`, {
     method: 'PATCH', token: ownerToken, body: { isAvailable: false },
   });
   if (unavailableToggle.status !== 200) throw new Error(`Availability disable failed: ${unavailableToggle.status}`);
@@ -105,23 +109,25 @@ try {
     method: 'POST',
     body: {
       customerSessionId: unavailableSessionId,
-      items: [{ menuItem: created.itemId, quantity: 1, price: 0 }],
+      items: [{ menuItem: created.menuItemIds[0], quantity: 1, price: 0 }],
     },
   });
   printRaw('unavailable_response', unavailableResponse);
   if (unavailableResponse.status !== 400) throw new Error(`Expected unavailable item 400, got ${unavailableResponse.status}`);
 
-  const availableAgain = await request(`/menu/items/${created.itemId}/availability`, {
+  const availableAgain = await request(`/menu/items/${created.menuItemIds[0]}/availability`, {
     method: 'PATCH', token: ownerToken, body: { isAvailable: true },
   });
   if (availableAgain.status !== 200) throw new Error(`Availability restore failed: ${availableAgain.status}`);
   console.log('availability_restored=true');
 } finally {
-  if (created.tableId) {
-    await Order.deleteMany({ table: created.tableId, source: 'customer' });
+  console.log(`cleanup_manifest=${JSON.stringify(created)}`);
+  if (created.orderIds.length) await Order.deleteMany({ _id: { $in: created.orderIds } });
+  if (ownerToken) await Promise.all(created.menuItemIds.map((id) => request(`/menu/items/${id}`, { method: 'DELETE', token: ownerToken })));
+  if (ownerToken) await Promise.all(created.categoryIds.map((id) => request(`/menu/categories/${id}`, { method: 'DELETE', token: ownerToken })));
+  if (ownerToken) for (const id of created.tableIds) {
+    await request(`/tables/${id}/status`, { method: 'PATCH', token: ownerToken, body: { status: 'free' } });
+    await request(`/tables/${id}`, { method: 'DELETE', token: ownerToken });
   }
-  if (created.itemId && ownerToken) await request(`/menu/items/${created.itemId}`, { method: 'DELETE', token: ownerToken });
-  if (created.categoryId && ownerToken) await request(`/menu/categories/${created.categoryId}`, { method: 'DELETE', token: ownerToken });
-  if (created.tableId && ownerToken) await request(`/tables/${created.tableId}`, { method: 'DELETE', token: ownerToken });
   await mongoose.disconnect();
 }

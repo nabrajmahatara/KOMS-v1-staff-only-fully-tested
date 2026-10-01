@@ -13,17 +13,25 @@ import CashierPage from "./pages/CashierPage";
 import ReportsPage from "./pages/ReportsPage";
 import CustomerOrderQueuePage from "./pages/CustomerOrderQueuePage";
 import CustomerOrderPage from "./pages/CustomerOrderPage";
+import CustomerLandingPage from "./pages/CustomerLandingPage";
+import OccupiedTablePickerPage from "./pages/OccupiedTablePickerPage";
+import CustomerTableOrderPage from "./pages/CustomerTableOrderPage";
+import NotificationBell from "./components/NotificationBell";
 import "./App.css";
 
 function App() {
   return (
     <BrowserRouter>
+      <NotificationBell />
       <Routes>
+        <Route path="/" element={<CustomerLandingPage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/order" element={<OccupiedTablePickerPage />} />
+        <Route path="/order/table/:tableId" element={<CustomerTableOrderPage />} />
         <Route path="/order/:token" element={<CustomerOrderPage />} />
 
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/not-authorized" element={<NotAuthorized />} />
         </Route>
         <Route element={<ProtectedRoute allowedRoles={["owner", "manager"]} />}>

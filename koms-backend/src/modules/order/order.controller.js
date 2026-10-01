@@ -9,6 +9,7 @@ import { ROLES } from '../../constants/roles.js';
 import User from '../auth/user.model.js';
 import { createNotification } from '../notification/notification.service.js';
 import { getIO } from '../../config/socket.js';
+import { claimFreeTable } from '../table/table.service.js';
 
 const editableStatuses = ['pending', 'confirmed'];
 const terminalStatuses = ['paid', 'cancelled'];
@@ -112,11 +113,7 @@ export const createOrder = asyncHandler(async (req, res) => {
   if (!tableId) throw new ApiError(400, 'table is required');
   const orderItems = await buildOrderItems(items);
 
-  const table = await Table.findOneAndUpdate(
-    { _id: tableId, status: 'free' },
-    { status: 'occupied' },
-    { new: true }
-  );
+  const table = await claimFreeTable(tableId);
   if (!table) {
     const tableExists = await Table.exists({ _id: tableId });
     if (!tableExists) throw new ApiError(404, 'Table not found');
@@ -243,12 +240,20 @@ export const updateItemStatus = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) throw new ApiError(404, 'Order not found');
   if (terminalStatuses.includes(order.status)) throw new ApiError(409, 'A closed order cannot be changed');
-  const waiterId = order.waiter.toString();
   const item = order.items.id(req.params.itemId);
   if (!item) throw new ApiError(404, 'Order item not found');
+
+  const isKitchenOrOwner = [ROLES.KITCHEN_STAFF, ROLES.OWNER].includes(req.user.role);
+  const isAssignedWaiter = req.user.role === ROLES.WAITER && order.waiter?.toString() === req.user._id.toString();
+  const waiterCanServeReadyItem = isAssignedWaiter && item.itemStatus === 'ready' && itemStatus === 'served';
+  if (!isKitchenOrOwner && !waiterCanServeReadyItem) {
+    throw new ApiError(403, 'Waiters can only mark their own ready items as served');
+  }
+
   if (!itemTransitions[item.itemStatus].includes(itemStatus)) {
     throw new ApiError(400, `Cannot change an item from ${item.itemStatus} to ${itemStatus}`);
   }
+  const waiterId = order.waiter.toString();
   const previousOrderStatus = order.status;
   item.itemStatus = itemStatus;
   if (itemStatus === 'preparing' && ['pending', 'confirmed'].includes(order.status)) order.status = 'preparing';

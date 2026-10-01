@@ -21,11 +21,12 @@ export function errorHandler(err, req, res, next) {
     error = new ApiError(400, `Invalid ${err.path}: ${err.value}`);
   }
 
+  const isPublicRequest = req.originalUrl.startsWith('/api/public/');
   res.status(error.statusCode || 500).json({
     success: false,
     message: error.message,
     errors: error.errors,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    ...(process.env.NODE_ENV === 'development' && !isPublicRequest && { stack: err.stack }),
   });
 }
 
