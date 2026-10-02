@@ -14,7 +14,7 @@ async function start() {
   const server = http.createServer(app);
   initSocket(server);
 
-  server.listen(config.port, () => {
+  server.listen(config.port, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${config.port}`);
   });
 }
